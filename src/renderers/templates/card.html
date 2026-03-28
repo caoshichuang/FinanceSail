@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字卡</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 1080px;
+            height: 1440px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding: 80px;
+        }
+
+        .card-number {
+            position: absolute;
+            top: 60px;
+            left: 60px;
+            background: #667eea;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 40px;
+            line-height: 1.3;
+        }
+
+        .card-body {
+            font-size: 32px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .card-body ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .card-body li {
+            margin-bottom: 20px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .card-body li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-size: 40px;
+            line-height: 1;
+        }
+
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .highlight-green {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding-top: 40px;
+            border-top: 2px solid #eee;
+            font-size: 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-number" id="cardNumber">1</div>
+
+    <div class="content">
+        <h2 class="card-title" id="cardTitle">今日大盘</h2>
+        <div class="card-body" id="cardBody">
+            <ul>
+                <li>上证指数：<span class="highlight">3,521.63</span>（<span class="highlight-green">+1.23%</span>）</li>
+                <li>深证成指：<span class="highlight">14,321.45</span>（<span class="highlight-green">+0.89%</span>）</li>
+                <li>创业板指：<span class="highlight">3,214.56</span>（<span class="highlight-green">+1.56%</span>）</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">数据来源：AKShare、东方财富</div>
+</body>
+</html>

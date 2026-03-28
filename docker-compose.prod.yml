@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  app:
+    image: ${DOCKER_USERNAME:-your_username}/redbook-auto:latest
+    container_name: redbook-auto
+    restart: always
+    volumes:
+      - /opt/redbook-auto/data:/app/data
+      - /opt/redbook-auto/logs:/app/logs
+      - /opt/redbook-auto/.env:/app/.env:ro
+    environment:
+      - TZ=Asia/Shanghai
+    env_file:
+      - /opt/redbook-auto/.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

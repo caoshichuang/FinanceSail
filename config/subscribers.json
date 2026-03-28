@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "email": "example@example.com",
+      "name": "示例用户",
+      "expire_date": "2026-04-28",
+      "stocks": [
+        {"code": "600519", "name": "贵州茅台"},
+        {"code": "00700", "name": "腾讯控股"}
+      ]
+    }
+  ]
+}
