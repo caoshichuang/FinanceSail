@@ -18,7 +18,5 @@ jobs:
             cd /home/admin/redbook-auto
             git fetch origin main
             git reset --hard origin/main
-            pkill -f "src.main" 2>/dev/null || true
-            export PATH=$PATH:/home/admin/.local/bin
-            nohup python3 -m src.main > /tmp/redbook-auto.log 2>&1 &
-            echo "部署完成，服务已重启"
+            screen -dmS redbook bash -c 'export PATH=$PATH:/home/admin/.local/bin && cd /home/admin/redbook-auto && python3 -m src.main'
+            echo "部署完成"
