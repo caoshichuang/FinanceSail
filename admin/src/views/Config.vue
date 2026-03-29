@@ -484,7 +484,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Check, RefreshLeft, Download, Upload, Delete, Plus 
 } from '@element-plus/icons-vue'
-import axios from 'axios'
+import api from '../utils/api'
 
 // 分类列表
 const categories = ref([])
@@ -564,7 +564,7 @@ const currentCategory = computed(() => {
 // 方法
 const fetchCategories = async () => {
   try {
-    const response = await axios.get('/api/config/categories')
+    const response = await api.get('/config/categories')
     categories.value = response.data.categories
   } catch (error) {
     console.error('Failed to fetch categories:', error)
@@ -574,7 +574,7 @@ const fetchCategories = async () => {
 
 const fetchCategoryConfig = async (category) => {
   try {
-    const response = await axios.get(`/api/config/category/${category}`)
+    const response = await api.get(`/config/category/${category}`)
     const data = response.data
     
     switch (category) {
@@ -661,7 +661,7 @@ const saveCategory = async () => {
         break
     }
     
-    await axios.put(`/api/config/category/${activeCategory.value}`, configData)
+    await api.put(`/config/category/${activeCategory.value}`, configData)
     ElMessage.success('Configuration saved successfully')
   } catch (error) {
     console.error('Failed to save config:', error)
@@ -692,7 +692,7 @@ const saveAll = async () => {
       distribution: distributionConfig.value
     }
     
-    await axios.put('/api/config/batch', { configs: allConfig })
+    await api.put('/config/batch', { configs: allConfig })
     ElMessage.success('All configurations saved successfully')
   } catch (error) {
     console.error('Failed to save all config:', error)
@@ -715,7 +715,7 @@ const resetAll = () => {
 
 const backupConfig = async () => {
   try {
-    const response = await axios.get('/api/config/backup')
+    const response = await api.get('/config/backup')
     const { backup_data, backup_file } = response.data
     
     // 下载备份文件
@@ -750,7 +750,7 @@ const restoreConfig = async () => {
     reader.onload = async (e) => {
       try {
         const backupData = JSON.parse(e.target.result)
-        await axios.post('/api/config/restore', backupData)
+        await api.post('/config/restore', backupData)
         ElMessage.success('Configuration restored successfully')
         restoreDialogVisible.value = false
         
@@ -774,7 +774,7 @@ const restoreConfig = async () => {
 
 const testEmail = async () => {
   try {
-    const response = await axios.post('/api/config/test/email')
+    const response = await api.post('/config/test/email')
     if (response.data.success) {
       ElMessage.success('Test email sent successfully')
     } else {

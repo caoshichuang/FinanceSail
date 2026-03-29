@@ -152,7 +152,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import axios from 'axios'
+import api from '../utils/api'
 
 const contents = ref([])
 const xiaohongshuDialogVisible = ref(false)
@@ -174,7 +174,7 @@ const getStatusType = (status) => {
 
 const fetchContents = async () => {
   try {
-    const response = await axios.get('/api/content/')
+    const response = await api.get('/content/')
     contents.value = response.data
   } catch (error) {
     console.error('Failed to fetch contents:', error)
@@ -184,7 +184,7 @@ const fetchContents = async () => {
 
 const distributeToXiaohongshu = async (content) => {
   try {
-    const response = await axios.post(`/api/distribution/xiaohongshu/${content.id}`)
+    const response = await api.post(`/distribution/xiaohongshu/${content.id}`)
     xiaohongshuData.value = response.data.data
     xiaohongshuDialogVisible.value = true
   } catch (error) {
@@ -195,7 +195,7 @@ const distributeToXiaohongshu = async (content) => {
 
 const distributeToWechat = async (content) => {
   try {
-    const response = await axios.post(`/api/distribution/wechat/${content.id}`)
+    const response = await api.post(`/distribution/wechat/${content.id}`)
     wechatData.value = response.data
     wechatDialogVisible.value = true
   } catch (error) {
@@ -206,7 +206,7 @@ const distributeToWechat = async (content) => {
 
 const distributeToToutiao = async (content) => {
   try {
-    const response = await axios.post(`/api/distribution/toutiao/${content.id}`)
+    const response = await api.post(`/distribution/toutiao/${content.id}`)
     toutiaoData.value = response.data
     toutiaoDialogVisible.value = true
   } catch (error) {

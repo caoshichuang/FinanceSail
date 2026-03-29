@@ -114,7 +114,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import axios from 'axios'
+import api from '../utils/api'
 
 const subscriptions = ref([])
 const dialogVisible = ref(false)
@@ -139,7 +139,7 @@ const parseRules = (rulesJson) => {
 
 const fetchSubscriptions = async () => {
   try {
-    const response = await axios.get('/api/subscriptions/')
+    const response = await api.get('/subscriptions/')
     subscriptions.value = response.data
   } catch (error) {
     console.error('Failed to fetch subscriptions:', error)
@@ -182,7 +182,7 @@ const deleteSubscription = async (row) => {
       { type: 'warning' }
     )
     
-    await axios.delete(`/api/subscriptions/${row.id}`)
+    await api.delete(`/subscriptions/${row.id}`)
     ElMessage.success('Subscription deleted')
     fetchSubscriptions()
   } catch (error) {
@@ -209,10 +209,10 @@ const saveSubscription = async () => {
     }
     
     if (isEditing.value) {
-      await axios.put(`/api/subscriptions/${editingId.value}`, data)
+      await api.put(`/subscriptions/${editingId.value}`, data)
       ElMessage.success('Subscription updated')
     } else {
-      await axios.post('/api/subscriptions/', data)
+      await api.post('/subscriptions/', data)
       ElMessage.success('Subscription created')
     }
     
