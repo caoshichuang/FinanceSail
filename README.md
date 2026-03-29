@@ -2,7 +2,7 @@
 
 > Automated Financial Content Distribution System | 📊 A股+港股+美股 | 📧 Auto Push | 🚀 CI/CD | 🎛️ Dashboard
 
-*Last updated: 2026-03-29 | CI/CD Test*
+*Last updated: 2026-03-29 | CI/CD 完全成功*
 
 AI驱动的多平台财经内容自动生成与分发系统，支持A股、港股、美股市场分析，一键发布到小红书、公众号、头条等平台。
 
@@ -286,11 +286,25 @@ cleanup_expired_users()
    - 构建前端（`npm run build`）
    - 重启服务（`nohup` 方式）
 
-**注意**：国内服务器访问 GitHub 可能超时，部署脚本已配置以下优化：
+**网络优化**：国内服务器访问 GitHub 可能超时，部署脚本已配置以下优化：
 - 使用 HTTP/1.1 协议
-- 设置低速限制和超时时间
-- 最多重试 3 次
+- 设置低速限制 1000 字节/秒，超时时间 60 秒
+- 最多重试 5 次
 - 使用 `--depth=1` 浅克隆
+
+**CI/CD 流程**：
+```
+推送代码 → GitHub Actions 触发 → SSH 连接服务器 → 执行 deploy.sh → 服务重启
+```
+
+**验证部署成功**：
+```bash
+# 检查服务状态
+curl http://你的服务器IP:8080/api/health
+
+# 检查代码版本
+ssh admin@你的服务器 "cd /home/admin/redbook-auto && git log -1 --oneline"
+```
 
 ### 方式2：手动部署
 
