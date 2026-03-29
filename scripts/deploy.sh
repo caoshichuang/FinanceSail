@@ -11,15 +11,19 @@ echo "========================================="
 
 cd $PROJECT_DIR
 
-# 1. 重启服务
-echo "[1/2] 重启服务..."
+# 1. 拉取最新代码
+echo "[1/3] 拉取最新代码..."
+git pull origin main
+
+# 2. 重启服务
+echo "[2/3] 重启服务..."
 pkill -f "src.main" || true
 sleep 1
 export PATH=$PATH:/home/admin/.local/bin
 nohup python3 -m uvicorn src.main:app --host 0.0.0.0 --port 8080 > /tmp/redbook-auto.log 2>&1 &
 
-# 2. 检查服务状态
-echo "[2/2] 检查服务状态..."
+# 3. 检查服务状态
+echo "[3/3] 检查服务状态..."
 sleep 15
 ps aux | grep "src.main" | grep -v grep || true
 curl -s http://localhost:8080/api/health || true
