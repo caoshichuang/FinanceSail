@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from ..auth import get_current_user
+from .auth import get_current_user
 from ..config.settings import settings
 from ..utils.logger import get_logger
 

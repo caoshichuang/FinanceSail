@@ -6,7 +6,7 @@ from typing import List, Optional
 from datetime import datetime, date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from ..auth import get_current_user
+from .auth import get_current_user
 from ..models.db import Content, get_session
 from ..utils.logger import get_logger
 from ..scheduler.jobs import us_stock_job, a_share_job, ipo_job, hot_stock_job

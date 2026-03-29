@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from ..auth import get_current_user
+from .auth import get_current_user
 from ..config.settings import settings
 from ..utils.logger import get_logger
 from ..scheduler.jobs import setup_scheduler

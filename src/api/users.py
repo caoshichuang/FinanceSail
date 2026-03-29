@@ -6,7 +6,7 @@ from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from ..auth import get_current_user
+from .auth import get_current_user
 from ..utils.subscribers import (
     load_config,
     save_config,
