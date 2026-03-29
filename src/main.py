@@ -4,9 +4,11 @@
 
 import asyncio
 import uvicorn
-from fastapi import FastAPI
+from pathlib import Path
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from .scheduler.jobs import setup_scheduler
 from .api import auth_router, users_router, content_router, config_router, logs_router
 from .api.content import preview_router
@@ -96,7 +98,21 @@ if images_dir.exists():
 # 挂载前端静态文件（如果存在）
 admin_dir = settings.PROJECT_ROOT / "admin" / "dist"
 if admin_dir.exists():
-    app.mount("/", StaticFiles(directory=str(admin_dir), html=True), name="admin")
+    # 挂载静态资源
+    app.mount(
+        "/assets", StaticFiles(directory=str(admin_dir / "assets")), name="assets"
+    )
+
+    # 处理 SPA 路由
+    @app.get("/{path:path}")
+    async def serve_spa(path: str):
+        """处理 SPA 路由，返回 index.html"""
+        # 检查是否是静态文件
+        file_path = admin_dir / path
+        if file_path.is_file():
+            return FileResponse(str(file_path))
+        # 否则返回 index.html
+        return FileResponse(str(admin_dir / "index.html"))
 
 
 if __name__ == "__main__":
