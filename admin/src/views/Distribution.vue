@@ -174,8 +174,8 @@ const getStatusType = (status) => {
 
 const fetchContents = async () => {
   try {
-    const response = await api.get('/content/')
-    contents.value = response.data
+    const data = await api.get('/content/')
+    contents.value = data
   } catch (error) {
     console.error('Failed to fetch contents:', error)
     ElMessage.error('Failed to load contents')
@@ -184,8 +184,8 @@ const fetchContents = async () => {
 
 const distributeToXiaohongshu = async (content) => {
   try {
-    const response = await api.post(`/distribution/xiaohongshu/${content.id}`)
-    xiaohongshuData.value = response.data.data
+    const data = await api.post(`/distribution/xiaohongshu/${content.id}`)
+    xiaohongshuData.value = data.data
     xiaohongshuDialogVisible.value = true
   } catch (error) {
     console.error('Failed to distribute to Xiaohongshu:', error)
@@ -195,8 +195,8 @@ const distributeToXiaohongshu = async (content) => {
 
 const distributeToWechat = async (content) => {
   try {
-    const response = await api.post(`/distribution/wechat/${content.id}`)
-    wechatData.value = response.data
+    const data = await api.post(`/distribution/wechat/${content.id}`)
+    wechatData.value = data
     wechatDialogVisible.value = true
   } catch (error) {
     console.error('Failed to distribute to WeChat:', error)

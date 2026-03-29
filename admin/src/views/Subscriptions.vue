@@ -139,8 +139,8 @@ const parseRules = (rulesJson) => {
 
 const fetchSubscriptions = async () => {
   try {
-    const response = await api.get('/subscriptions/')
-    subscriptions.value = response.data
+    const data = await api.get('/subscriptions/')
+    subscriptions.value = data
   } catch (error) {
     console.error('Failed to fetch subscriptions:', error)
     ElMessage.error('Failed to load subscriptions')

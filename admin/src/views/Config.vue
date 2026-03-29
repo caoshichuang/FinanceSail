@@ -564,8 +564,8 @@ const currentCategory = computed(() => {
 // 方法
 const fetchCategories = async () => {
   try {
-    const response = await api.get('/config/categories')
-    categories.value = response.data.categories
+    const data = await api.get('/config/categories')
+    categories.value = data.categories
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     ElMessage.error('Failed to load configuration categories')
@@ -574,8 +574,7 @@ const fetchCategories = async () => {
 
 const fetchCategoryConfig = async (category) => {
   try {
-    const response = await api.get(`/config/category/${category}`)
-    const data = response.data
+    const data = await api.get(`/config/category/${category}`)
     
     switch (category) {
       case 'ai':
@@ -660,6 +659,16 @@ const saveCategory = async () => {
         configData = distributionConfig.value
         break
     }
+    
+    await api.put(`/config/category/${activeCategory.value}`, configData)
+    ElMessage.success('Configuration saved successfully')
+  } catch (error) {
+    console.error('Failed to save config:', error)
+    ElMessage.error('Failed to save configuration')
+  } finally {
+    saving.value = false
+  }
+}
     
     await api.put(`/config/category/${activeCategory.value}`, configData)
     ElMessage.success('Configuration saved successfully')
