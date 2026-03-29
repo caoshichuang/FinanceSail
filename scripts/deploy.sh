@@ -23,20 +23,27 @@ cd $PROJECT_DIR
 
 # 优化 git 配置，避免超时
 git config --global http.version HTTP/1.1
-git config --global http.lowSpeedLimit 0
-git config --global http.lowSpeedTime 999999
+git config --global http.lowSpeedLimit 1000
+git config --global http.lowSpeedTime 60
 
-# 尝试拉取代码，最多重试 3 次
-for i in {1..3}; do
+# 尝试拉取代码，最多重试 5 次
+SUCCESS=0
+for i in 1 2 3 4 5; do
   echo "尝试第 $i 次拉取..."
   if git fetch origin main --depth=1; then
     echo "拉取成功！"
+    SUCCESS=1
     break
   else
-    echo "拉取失败，等待 5 秒后重试..."
-    sleep 5
+    echo "拉取失败，等待 10 秒后重试..."
+    sleep 10
   fi
 done
+
+if [ $SUCCESS -eq 0 ]; then
+  echo "错误：5 次尝试均失败，无法拉取代码"
+  exit 1
+fi
 
 git reset --hard origin/main
 
