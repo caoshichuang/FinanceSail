@@ -2,6 +2,8 @@
 
 > Automated Financial Content Distribution System | 📊 A股+港股+美股 | 📧 Auto Push | 🚀 CI/CD | 🎛️ Dashboard
 
+*Last updated: 2026-03-29 | CI/CD Test*
+
 AI驱动的多平台财经内容自动生成与分发系统，支持A股、港股、美股市场分析，一键发布到小红书、公众号、头条等平台。
 
 ## 功能特性
