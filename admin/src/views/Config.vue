@@ -669,16 +669,6 @@ const saveCategory = async () => {
     saving.value = false
   }
 }
-    
-    await api.put(`/config/category/${activeCategory.value}`, configData)
-    ElMessage.success('Configuration saved successfully')
-  } catch (error) {
-    console.error('Failed to save config:', error)
-    ElMessage.error('Failed to save configuration')
-  } finally {
-    saving.value = false
-  }
-}
 
 const resetCategory = () => {
   fetchCategoryConfig(activeCategory.value)
