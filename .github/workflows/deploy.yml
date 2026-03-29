@@ -16,7 +16,4 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           script: |
             cd /home/admin/redbook-auto
-            git fetch origin main
-            git reset --hard origin/main
-            screen -dmS redbook bash -c 'export PATH=$PATH:/home/admin/.local/bin && cd /home/admin/redbook-auto && python3 -m src.main'
-            echo "部署完成"
+            bash scripts/deploy.sh

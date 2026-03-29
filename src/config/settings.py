@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     SMTP_SERVER: str = Field(default="smtp.qq.com", description="SMTP服务器")
     SMTP_PORT: int = Field(default=465, description="SMTP端口")
 
+    # 应用配置
+    BASE_URL: str = Field(
+        default="http://139.224.40.205:8080", description="应用访问地址"
+    )
+
     # 日志配置
     LOG_LEVEL: str = Field(default="INFO", description="日志级别")
     LOG_ROTATION: str = Field(default="10 MB", description="日志轮转大小")

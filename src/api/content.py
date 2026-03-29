@@ -2,6 +2,7 @@
 内容管理API模块
 """
 
+import json
 from typing import List, Optional
 from datetime import datetime, date
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -10,11 +11,13 @@ from .auth import get_current_user
 from ..models.db import Content, get_session
 from ..utils.logger import get_logger
 from ..scheduler.jobs import us_stock_job, a_share_job, ipo_job, hot_stock_job
+from ..config.settings import settings
 import asyncio
 
 logger = get_logger("content_api")
 
 router = APIRouter(prefix="/api/content", tags=["内容管理"])
+preview_router = APIRouter(tags=["内容预览"])
 
 
 class ContentResponse(BaseModel):
@@ -176,5 +179,59 @@ async def get_content_stats(current_user: str = Depends(get_current_user)):
         total_count = session.query(Content).count()
 
         return {"today_count": today_count, "total_count": total_count}
+    finally:
+        session.close()
+
+
+# 预览API（无需认证）
+class PreviewResponse(BaseModel):
+    id: int
+    market: str
+    content_type: str
+    title: str
+    content: str
+    tags: str
+    image_urls: List[str]
+    created_at: str
+
+
+@preview_router.get("/api/preview/{content_id}", response_model=PreviewResponse)
+async def preview_content(content_id: int):
+    """预览内容详情（无需认证）"""
+    session = get_session()
+    try:
+        content = session.query(Content).filter(Content.id == content_id).first()
+        if not content:
+            raise HTTPException(status_code=404, detail="内容不存在")
+
+        # 解析图片路径
+        image_urls = []
+        if content.image_paths:
+            try:
+                image_paths = json.loads(content.image_paths)
+                for path in image_paths:
+                    # 转换为可访问的URL
+                    path_obj = settings.PROJECT_ROOT / path
+                    if path_obj.exists():
+                        # 从完整路径中提取相对路径
+                        relative_path = str(path_obj.relative_to(settings.IMAGE_DIR))
+                        image_urls.append(f"/images/{relative_path}")
+                    else:
+                        logger.warning(f"图片文件不存在: {path}")
+            except json.JSONDecodeError:
+                logger.error(f"解析图片路径失败: {content.image_paths}")
+
+        return PreviewResponse(
+            id=content.id,
+            market=content.market,
+            content_type=content.content_type,
+            title=content.title,
+            content=content.content,
+            tags=content.tags or "",
+            image_urls=image_urls,
+            created_at=content.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            if content.created_at
+            else "",
+        )
     finally:
         session.close()

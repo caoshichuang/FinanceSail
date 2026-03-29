@@ -1,5 +1,5 @@
 """
-应用入口模块
+应用入口模块 - FinanceSail
 """
 
 import asyncio
@@ -9,14 +9,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .scheduler.jobs import setup_scheduler
 from .api import auth_router, users_router, content_router, config_router, logs_router
+from .api.content import preview_router
+from .api.distribution import router as distribution_router
+from .api.subscriptions import router as subscriptions_router
 from .utils.logger import get_logger
 from .config.settings import settings
+from .config.project import (
+    PROJECT_NAME,
+    PROJECT_NAME_EN,
+    PROJECT_VERSION,
+    PROJECT_DESCRIPTION,
+)
 
 logger = get_logger("main")
 
 # 创建FastAPI应用
 app = FastAPI(
-    title="小红书股票内容自动运营系统", description="后台管理API", version="1.0.0"
+    title=f"{PROJECT_NAME} {PROJECT_NAME_EN}",
+    description=PROJECT_DESCRIPTION,
+    version=PROJECT_VERSION,
 )
 
 # CORS配置
@@ -34,6 +45,9 @@ app.include_router(users_router)
 app.include_router(content_router)
 app.include_router(config_router)
 app.include_router(logs_router)
+app.include_router(preview_router)
+app.include_router(distribution_router)
+app.include_router(subscriptions_router)
 
 
 @app.get("/api/health")
@@ -45,7 +59,11 @@ async def health_check():
 @app.on_event("startup")
 async def startup_event():
     """应用启动事件"""
-    logger.info("小红书股票内容自动运营系统启动")
+    from .config.project import PROJECT_LOGO
+
+    logger.info(
+        f"{PROJECT_LOGO} {PROJECT_NAME} {PROJECT_NAME_EN} v{PROJECT_VERSION} 启动"
+    )
 
     # 初始化数据库
     from .models.db import init_db
@@ -69,6 +87,11 @@ async def shutdown_event():
     """应用关闭事件"""
     logger.info("系统正在关闭...")
 
+
+# 挂载图片静态文件
+images_dir = settings.IMAGE_DIR
+if images_dir.exists():
+    app.mount("/images", StaticFiles(directory=str(images_dir)), name="images")
 
 # 挂载前端静态文件（如果存在）
 admin_dir = settings.PROJECT_ROOT / "admin" / "dist"

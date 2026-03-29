@@ -78,25 +78,28 @@ async def us_stock_job():
         zip_path = image_dir / f"us_{date_str}.zip"
         packer.pack(all_images, zip_path)
 
-        # 4. 发送邮件
-        notifier = EmailNotifier()
-        notifier.send(
-            market=MarketType.US_STOCK,
-            titles=content["titles"],
-            content=content["content"],
-            tags=content["tags"],
-            attachments=[zip_path],
-            date=data.get("date", ""),
-        )
-
-        # 5. 保存记录
-        save_content_record(
+        # 4. 保存记录
+        content_id = save_content_record(
             market=MarketType.US_STOCK,
             content_type=ContentType.SUMMARY,
             title=content["titles"][0],
             content=content["content"],
             tags=content["tags"],
             status=ContentStatus.SENT,
+            image_paths=[str(p.relative_to(settings.PROJECT_ROOT)) for p in all_images],
+        )
+
+        # 5. 发送邮件
+        notifier = EmailNotifier()
+        notifier.send(
+            market=MarketType.US_STOCK,
+            titles=content["titles"],
+            content=content["content"],
+            tags=content["tags"],
+            attachments=[cover_path],  # 只发送封面图片，不发送zip
+            date=data.get("date", ""),
+            content_id=content_id,
+            cover_image=cover_path,
         )
 
         logger.info(f"{job_name}任务完成")
@@ -163,25 +166,28 @@ async def a_share_job():
         zip_path = image_dir / f"a_share_{date_str}.zip"
         packer.pack(all_images, zip_path)
 
-        # 6. 发送邮件
-        notifier = EmailNotifier()
-        notifier.send(
-            market=MarketType.A_SHARE,
-            titles=a_share_content["titles"],
-            content=a_share_content["content"],
-            tags=a_share_content["tags"],
-            attachments=[zip_path],
-            date=a_share_data.get("date", ""),
-        )
-
-        # 7. 保存记录
-        save_content_record(
+        # 6. 保存记录
+        content_id = save_content_record(
             market=MarketType.A_SHARE,
             content_type=ContentType.SUMMARY,
             title=a_share_content["titles"][0],
             content=a_share_content["content"],
             tags=a_share_content["tags"],
             status=ContentStatus.SENT,
+            image_paths=[str(p.relative_to(settings.PROJECT_ROOT)) for p in all_images],
+        )
+
+        # 7. 发送邮件
+        notifier = EmailNotifier()
+        notifier.send(
+            market=MarketType.A_SHARE,
+            titles=a_share_content["titles"],
+            content=a_share_content["content"],
+            tags=a_share_content["tags"],
+            attachments=[cover_path],  # 只发送封面图片，不发送zip
+            date=a_share_data.get("date", ""),
+            content_id=content_id,
+            cover_image=cover_path,
         )
 
         logger.info(f"{job_name}任务完成")
@@ -199,9 +205,12 @@ def save_content_record(
     content: str,
     tags: str,
     status: str,
-):
+    image_paths: list = None,
+) -> int:
     """保存内容记录"""
     try:
+        import json
+
         session = get_session()
         record = Content(
             market=market,
@@ -210,13 +219,17 @@ def save_content_record(
             content=content,
             tags=tags,
             status=status,
+            image_paths=json.dumps(image_paths) if image_paths else None,
         )
         session.add(record)
         session.commit()
+        content_id = record.id
         session.close()
-        logger.info(f"内容记录保存成功: {title}")
+        logger.info(f"内容记录保存成功: {title} (ID: {content_id})")
+        return content_id
     except Exception as e:
         logger.error(f"内容记录保存失败: {e}")
+        return None
 
 
 async def hot_stock_job():
@@ -281,6 +294,19 @@ async def hot_stock_job():
             zip_path = image_dir / f"hot_{stock['code']}_{date_str}.zip"
             packer.pack(all_images, zip_path)
 
+            # 保存记录
+            content_id = save_content_record(
+                market="A股",
+                content_type=ContentType.HOT_STOCK,
+                title=content["titles"][0],
+                content=content["content"],
+                tags=content["tags"],
+                status=ContentStatus.SENT,
+                image_paths=[
+                    str(p.relative_to(settings.PROJECT_ROOT)) for p in all_images
+                ],
+            )
+
             # 发送邮件
             notifier = EmailNotifier()
             notifier.send(
@@ -288,18 +314,10 @@ async def hot_stock_job():
                 titles=content["titles"],
                 content=content["content"],
                 tags=content["tags"],
-                attachments=[zip_path],
+                attachments=[cover_path],  # 只发送封面图片，不发送zip
                 date=datetime.now().strftime("%Y-%m-%d"),
-            )
-
-            # 保存记录
-            save_content_record(
-                market="A股",
-                content_type=ContentType.HOT_STOCK,
-                title=content["titles"][0],
-                content=content["content"],
-                tags=content["tags"],
-                status=ContentStatus.SENT,
+                content_id=content_id,
+                cover_image=cover_path,
             )
 
         logger.info(f"{job_name}任务完成")
@@ -372,6 +390,19 @@ async def ipo_job():
             zip_path = image_dir / f"ipo_{ipo['code']}_{date_str}.zip"
             packer.pack(all_images, zip_path)
 
+            # 保存记录
+            content_id = save_content_record(
+                market="A股",
+                content_type=ContentType.IPO,
+                title=content["titles"][0],
+                content=content["content"],
+                tags=content["tags"],
+                status=ContentStatus.SENT,
+                image_paths=[
+                    str(p.relative_to(settings.PROJECT_ROOT)) for p in all_images
+                ],
+            )
+
             # 发送邮件
             notifier = EmailNotifier()
             notifier.send(
@@ -379,18 +410,10 @@ async def ipo_job():
                 titles=content["titles"],
                 content=content["content"],
                 tags=content["tags"],
-                attachments=[zip_path],
+                attachments=[cover_path],  # 只发送封面图片，不发送zip
                 date=ipo.get("subscription_date", ""),
-            )
-
-            # 保存记录
-            save_content_record(
-                market="A股",
-                content_type=ContentType.IPO,
-                title=content["titles"][0],
-                content=content["content"],
-                tags=content["tags"],
-                status=ContentStatus.SENT,
+                content_id=content_id,
+                cover_image=cover_path,
             )
 
         logger.info(f"{job_name}任务完成")

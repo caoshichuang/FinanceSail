@@ -2,7 +2,7 @@
   <el-container class="layout-container">
     <el-aside :width="isCollapse ? '64px' : '200px'">
       <div class="logo">
-        <span v-if="!isCollapse">后台管理</span>
+        <span v-if="!isCollapse">⛵ FinanceSail</span>
       </div>
       <el-menu
         :default-active="route.path"
@@ -30,11 +30,11 @@
         <div class="header-right">
           <el-dropdown @command="handleCommand">
             <span class="user-info">
-              管理员 <el-icon><ArrowDown /></el-icon>
+              Admin <el-icon><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                <el-dropdown-item command="logout">Logout</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -57,11 +57,13 @@ const router = useRouter()
 const isCollapse = ref(false)
 
 const menuItems = [
-  { path: '/dashboard', title: '仪表盘', icon: 'Odometer' },
-  { path: '/users', title: '用户管理', icon: 'User' },
-  { path: '/content', title: '内容管理', icon: 'Document' },
-  { path: '/config', title: '系统配置', icon: 'Setting' },
-  { path: '/logs', title: '日志查看', icon: 'List' }
+  { path: '/dashboard', title: 'Dashboard', icon: 'Odometer' },
+  { path: '/users', title: 'Users', icon: 'User' },
+  { path: '/content', title: 'Content', icon: 'Document' },
+  { path: '/distribution', title: 'Distribution', icon: 'Share' },
+  { path: '/subscriptions', title: 'Subscriptions', icon: 'Bell' },
+  { path: '/config', title: 'Config', icon: 'Setting' },
+  { path: '/logs', title: 'Logs', icon: 'List' }
 ]
 
 const handleCommand = (command) => {
