@@ -21,7 +21,21 @@ cp $PROJECT_DIR/data/db.sqlite3 $BACKUP_DIR/db.sqlite3 2>/dev/null || true
 echo "[2/5] 拉取最新代码..."
 cd $PROJECT_DIR
 
-# 切换到 SSH 地址（避免 HTTPS 超时）
+# 清除代理设置（避免本地 clash/v2ray 代理干扰 GitHub 访问）
+echo "清除代理设置..."
+unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY
+git config --global --unset http.proxy 2>/dev/null || true
+git config --global --unset https.proxy 2>/dev/null || true
+git config --local --unset http.proxy 2>/dev/null || true
+git config --local --unset https.proxy 2>/dev/null || true
+
+# 确保 GitHub SSH 主机密钥存在（避免 Host key verification failed）
+echo "确认 GitHub SSH 主机密钥..."
+mkdir -p ~/.ssh
+ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+chmod 600 ~/.ssh/known_hosts
+
+# 切换到 SSH 地址
 echo "切换到 SSH 地址..."
 git remote set-url origin git@github.com:caoshichuang/FinanceSail.git
 
