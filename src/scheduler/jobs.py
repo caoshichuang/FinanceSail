@@ -30,6 +30,29 @@ from ..utils.workday import (
 )
 from .smart_scheduler import SmartScheduler
 
+# 新版：TradingCalendar 集成（优先使用，降级到旧版 workday）
+try:
+    from ..core.trading_calendar import is_market_open as _calendar_is_open
+
+    def _is_trading_day(market: str) -> bool:
+        """
+        工作日判断（集成 TradingCalendar）
+
+        Args:
+            market: "cn" / "hk" / "us"
+        """
+        return _calendar_is_open(market)
+
+except ImportError:
+    # trading_calendar 未就绪时降级到旧版
+    def _is_trading_day(market: str) -> bool:
+        if market == "us":
+            return should_send_us_stock_email()
+        elif market == "hk":
+            return should_send_hk_stock_email()
+        return should_send_a_stock_email()
+
+
 logger = get_logger("scheduler")
 
 
@@ -38,7 +61,7 @@ async def us_stock_job():
     job_name = "美股总结"
 
     # 判断美股是否开盘
-    if not should_send_us_stock_email():
+    if not _is_trading_day("us"):
         return
 
     logger.info(f"开始执行{job_name}任务")
@@ -115,8 +138,8 @@ async def a_share_job():
     job_name = "A股港股总结"
 
     # 判断是否有市场开盘
-    a_open = should_send_a_stock_email()
-    hk_open = should_send_hk_stock_email()
+    a_open = _is_trading_day("cn")
+    hk_open = _is_trading_day("hk")
 
     if not a_open and not hk_open:
         logger.info("今日A股和港股均休市，跳过")
@@ -237,7 +260,7 @@ async def hot_stock_job():
     job_name = "热点个股"
 
     # 判断A股是否开盘
-    if not should_send_a_stock_email():
+    if not _is_trading_day("cn"):
         logger.info("今日A股休市，跳过热点个股")
         return
 
@@ -333,7 +356,7 @@ async def ipo_job():
     job_name = "IPO分析"
 
     # 判断A股是否开盘
-    if not should_send_a_stock_email():
+    if not _is_trading_day("cn"):
         logger.info("今日A股休市，跳过IPO分析")
         return
 
@@ -425,13 +448,18 @@ async def ipo_job():
 
 
 def setup_scheduler() -> AsyncIOScheduler:
-    """设置定时任务（使用动态配置）"""
+    """设置定时任务（使用动态配置，按市场时区调度）"""
     # 初始化数据库
     init_db()
 
     # 重新加载动态配置
     settings.load_dynamic_config()
 
+    # A股/港股用 Asia/Shanghai 时区；美股用 America/New_York 时区
+    scheduler_cn = AsyncIOScheduler(timezone="Asia/Shanghai")
+    scheduler_us = AsyncIOScheduler(timezone="America/New_York")
+
+    # 复用同一个 AsyncIOScheduler，但通过 timezone 参数控制各 job 触发时区
     scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
 
     # 解析动态配置的时间
@@ -440,42 +468,41 @@ def setup_scheduler() -> AsyncIOScheduler:
         try:
             parts = time_str.split(":")
             return int(parts[0]), int(parts[1])
-        except:
-            # 默认值
+        except Exception:
             return 9, 0
 
-    # 美股总结
+    # 美股总结（按美东时间调度，09:00 ET ≈ 美股前市）
     us_hour, us_minute = parse_time(settings.US_STOCK_TIME)
     scheduler.add_job(
         us_stock_job,
-        CronTrigger(hour=us_hour, minute=us_minute),
+        CronTrigger(hour=us_hour, minute=us_minute, timezone="America/New_York"),
         id="us_stock_summary",
         name="美股总结",
     )
 
-    # A股+港股总结
+    # A股+港股总结（北京时间）
     a_hour, a_minute = parse_time(settings.A_SHARE_TIME)
     scheduler.add_job(
         a_share_job,
-        CronTrigger(hour=a_hour, minute=a_minute),
+        CronTrigger(hour=a_hour, minute=a_minute, timezone="Asia/Shanghai"),
         id="a_share_summary",
         name="A股港股总结",
     )
 
-    # 热点个股
+    # 热点个股（北京时间）
     hot_hour, hot_minute = parse_time(settings.HOT_STOCK_TIME)
     scheduler.add_job(
         hot_stock_job,
-        CronTrigger(hour=hot_hour, minute=hot_minute),
+        CronTrigger(hour=hot_hour, minute=hot_minute, timezone="Asia/Shanghai"),
         id="hot_stock",
         name="热点个股",
     )
 
-    # IPO分析
+    # IPO分析（北京时间）
     ipo_hour, ipo_minute = parse_time(settings.IPO_TIME)
     scheduler.add_job(
         ipo_job,
-        CronTrigger(hour=ipo_hour, minute=ipo_minute),
+        CronTrigger(hour=ipo_hour, minute=ipo_minute, timezone="Asia/Shanghai"),
         id="ipo_analysis",
         name="IPO分析",
     )

@@ -72,6 +72,28 @@ async def startup_event():
 
     init_db()
 
+    # ── 新架构模块预热 ────────────────────────────────────
+    # 初始化交易日历（exchange-calendars 首次加载较慢，提前预热）
+    try:
+        from .core.trading_calendar import get_open_markets_today
+
+        open_markets = get_open_markets_today()
+        logger.info(f"今日开盘市场: {open_markets or '无（休市）'}")
+    except Exception as e:
+        logger.warning(f"交易日历预热失败（不影响主流程）: {e}")
+
+    # 初始化通知服务（检测已配置渠道）
+    try:
+        from .notifiers.notification_service import NotificationService
+
+        ns = NotificationService()
+        if not ns.is_available():
+            logger.warning("未配置任何通知渠道，请检查 .env 配置")
+    except Exception as e:
+        logger.warning(f"通知服务初始化失败（不影响主流程）: {e}")
+
+    # ─────────────────────────────────────────────────────
+
     # 设置定时任务
     scheduler = setup_scheduler()
     scheduler.start()

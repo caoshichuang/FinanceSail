@@ -1,0 +1,18 @@
+{#
+  FinanceSail 企业微信精简模板（≤4000 字节）
+  变量：results (list[AnalysisResult]), report_date (str), lang (str)
+#}
+**FinanceSail** | {{ report_date }}
+
+{% for r in results %}
+> **{{ r.stock_name or r.stock_code }}** ({{ r.stock_code }})
+情绪: {{ r.sentiment_score if r.sentiment_score is not none else '-' }}/100 | 风险: {{ r.risk_level or '-' }}
+建议: {{ r.operation_advice or '-' }}
+{% if r.dashboard and r.dashboard.core_conclusion and r.dashboard.core_conclusion.one_sentence %}
+{{ r.dashboard.core_conclusion.one_sentence }}
+{% elif r.analysis_summary %}
+{{ r.analysis_summary[:100] }}{% if r.analysis_summary|length > 100 %}...{% endif %}
+{% endif %}
+
+{% endfor %}
+⚠️ 仅供参考，不构成投资建议

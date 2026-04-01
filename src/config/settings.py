@@ -99,6 +99,73 @@ class Settings(BaseSettings):
     HOT_STOCK_TIME: str = Field(default="17:30", description="热点个股时间")
     IPO_TIME: str = Field(default="20:00", description="IPO分析时间")
 
+    # ==================== Phase 8: 新增配置项 ====================
+
+    # LiteLLM 多模型配置
+    OPENAI_API_KEY: Optional[str] = Field(
+        default=None, description="OpenAI API Key（备用模型）"
+    )
+    OPENAI_BASE_URL: str = Field(
+        default="https://api.openai.com/v1", description="OpenAI API 地址"
+    )
+    LITELLM_FALLBACK_MODEL: str = Field(
+        default="openai/gpt-4o-mini", description="LiteLLM Fallback 模型"
+    )
+    LITELLM_ROUTING_STRATEGY: str = Field(
+        default="simple-shuffle", description="LiteLLM 路由策略"
+    )
+
+    # 多渠道通知配置
+    WECHAT_WEBHOOK_URL: Optional[str] = Field(
+        default=None, description="企业微信 Webhook URL"
+    )
+    FEISHU_WEBHOOK_URL: Optional[str] = Field(
+        default=None, description="飞书 Webhook URL"
+    )
+    TELEGRAM_BOT_TOKEN: Optional[str] = Field(
+        default=None, description="Telegram Bot Token"
+    )
+    TELEGRAM_CHAT_ID: Optional[str] = Field(
+        default=None, description="Telegram Chat ID"
+    )
+    EMAIL_SENDER: Optional[str] = Field(
+        default=None, description="发件人邮箱（EMAIL_SENDER 或 QQ_EMAIL 二选一）"
+    )
+    EMAIL_PASSWORD: Optional[str] = Field(
+        default=None, description="发件人邮箱密码/授权码"
+    )
+    EMAIL_RECEIVERS: Optional[str] = Field(
+        default=None, description="收件人（逗号分隔多个）"
+    )
+    PUSHPLUS_TOKEN: Optional[str] = Field(default=None, description="PushPlus Token")
+    PUSHPLUS_TOPIC: Optional[str] = Field(
+        default=None, description="PushPlus 群组主题（可选）"
+    )
+
+    # 交易策略配置
+    STRATEGIES_DIR: str = Field(default="strategies", description="策略 YAML 文件目录")
+    ACTIVE_STRATEGIES: str = Field(
+        default="bull_trend", description="激活的策略名称（逗号分隔）"
+    )
+
+    # 交易日历配置
+    TRADING_CALENDAR_CN: str = Field(
+        default="XSHG", description="A股日历 exchange-calendars 代码"
+    )
+    TRADING_CALENDAR_US: str = Field(
+        default="XNYS", description="美股日历 exchange-calendars 代码"
+    )
+    TRADING_CALENDAR_HK: str = Field(
+        default="XHKG", description="港股日历 exchange-calendars 代码"
+    )
+
+    # 报告渲染配置
+    REPORT_LANGUAGE: str = Field(default="zh", description="报告语言（zh / en）")
+    REPORT_TYPE: str = Field(
+        default="full", description="报告类型（simple / full / brief）"
+    )
+    REPORT_SUMMARY_ONLY: bool = Field(default=False, description="仅输出摘要")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

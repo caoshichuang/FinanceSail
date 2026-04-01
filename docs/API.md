@@ -1,5 +1,7 @@
 # FinanceSail API 文档
 
+> **v2.0 新增**：Pipeline 直接调用接口、多渠道通知接口
+
 ## 认证
 
 所有 API 都需要 JWT Token 认证。
