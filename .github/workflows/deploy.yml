@@ -8,57 +8,60 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to server
+      # 1. 在 Actions runner（GitHub 机房）检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 配置 SSH 私钥，用于后续 rsync 和 ssh 命令
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      # 3. rsync 推送代码到服务器（跳过敏感文件、git历史、node_modules）
+      - name: Sync code to server
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='admin/node_modules' \
+            --exclude='admin/dist' \
+            --exclude='.env' \
+            --exclude='data/holidays.json' \
+            --exclude='data/db.sqlite3' \
+            --exclude='data/images' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/admin/FinanceSai/
+
+      # 4. SSH 到服务器：安装依赖、构建前端、重启服务
+      - name: Build and restart service
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_KEY }}
-          script_stop: true
           script: |
             set -e
             PROJECT_DIR="/home/admin/FinanceSai"
-            BACKUP_DIR="/tmp/finacesail-backup"
-            REPO_URL="https://github.com/caoshichuang/FinanceSail.git"
+            cd $PROJECT_DIR
 
             echo "========================================="
-            echo "FinanceSail 部署开始"
+            echo "FinanceSail 部署开始（代码已由 rsync 推送）"
             echo "========================================="
 
-            # 1. 备份敏感文件
-            mkdir -p $BACKUP_DIR
-            cp $PROJECT_DIR/.env $BACKUP_DIR/.env 2>/dev/null || true
-            cp $PROJECT_DIR/data/holidays.json $BACKUP_DIR/holidays.json 2>/dev/null || true
-            cp $PROJECT_DIR/data/db.sqlite3 $BACKUP_DIR/db.sqlite3 2>/dev/null || true
-
-            # 2. 拉取/克隆最新代码（清除代理，使用 HTTPS）
-            git config --global --unset http.proxy 2>/dev/null || true
-            git config --global --unset https.proxy 2>/dev/null || true
-            unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY
-
-            if [ -d "$PROJECT_DIR/.git" ]; then
-              cd $PROJECT_DIR
-              git remote set-url origin $REPO_URL
-              git fetch origin main
-              git reset --hard origin/main
-            else
-              mkdir -p "$(dirname $PROJECT_DIR)"
-              git clone $REPO_URL "$PROJECT_DIR"
-              cd $PROJECT_DIR
-            fi
-
-            # 3. 恢复敏感文件
-            cp $BACKUP_DIR/.env $PROJECT_DIR/.env 2>/dev/null || echo "警告: .env 未恢复（首次部署需手动配置）"
-            cp $BACKUP_DIR/holidays.json $PROJECT_DIR/data/holidays.json 2>/dev/null || true
-            cp $BACKUP_DIR/db.sqlite3 $PROJECT_DIR/data/db.sqlite3 2>/dev/null || true
-
-            # 4. 构建前端
+            # 构建前端（使用国内镜像）
+            echo "[1/2] 构建前端..."
             cd $PROJECT_DIR/admin
             npm install --registry=https://registry.npmmirror.com
             npm run build
             cd $PROJECT_DIR
 
-            # 5. 重启服务
+            # 重启 Python 服务
+            echo "[2/2] 重启服务..."
             pkill -f "src.main" || true
             sleep 2
             export PATH=$PATH:/home/admin/.local/bin
