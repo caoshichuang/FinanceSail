@@ -37,8 +37,8 @@ jobs:
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/admin/FinanceSai/
 
-      # 4. SSH 到服务器：安装依赖、构建前端、重启服务
-      - name: Build and restart service
+      # 4. SSH：构建前端
+      - name: Build frontend
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -46,37 +46,44 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           script: |
             set -e
-            PROJECT_DIR="/home/admin/FinanceSai"
-            cd $PROJECT_DIR
-
-            echo "========================================="
-            echo "FinanceSail 部署开始（代码已由 rsync 推送）"
-            echo "========================================="
-
-            # 构建前端（使用国内镜像）
-            echo "[1/2] 构建前端..."
-            cd $PROJECT_DIR/admin
+            cd /home/admin/FinanceSai/admin
             npm install --registry=https://registry.npmmirror.com
             npm run build
-            cd $PROJECT_DIR
+            echo "前端构建完成"
 
-            # 重启 Python 服务
-            echo "[2/2] 重启服务..."
-            # 精确杀掉旧的 uvicorn 进程（通过完整命令行匹配，不影响 ssh 进程）
-            OLD_PID=$(pgrep -f "uvicorn src.main:app" 2>/dev/null || echo "")
+      # 5. SSH：重启 Python 服务（独立 session，避免 SIGTERM 影响）
+      - name: Restart service
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_KEY }}
+          script: |
+            export PATH=$PATH:/home/admin/.local/bin
+            # 杀掉旧进程
+            OLD_PID=$(pgrep -f "uvicorn src.main:app" 2>/dev/null || true)
             if [ -n "$OLD_PID" ]; then
               kill $OLD_PID 2>/dev/null || true
               sleep 3
             fi
-            export PATH=$PATH:/home/admin/.local/bin
-            # setsid + disown 让新进程完全脱离当前 session
+            # 启动新进程（完全脱离当前 session）
+            cd /home/admin/FinanceSai
             setsid python3 -m uvicorn src.main:app --host 0.0.0.0 --port 8080 >> /tmp/finacesail.log 2>&1 &
             disown $!
+            echo "服务启动命令已发出，PID=$!"
 
+      # 6. SSH：等待服务就绪并验证
+      - name: Verify service health
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_KEY }}
+          script: |
             echo "等待服务启动..."
-            sleep 15
+            sleep 20
             echo "========================================="
             echo "FinanceSail 部署完成"
             echo "========================================="
-            ps aux | grep "uvicorn" | grep -v grep || echo "警告：服务未运行"
-            curl -s http://localhost:8080/api/health || echo "警告：服务未响应（可能仍在启动中）"
+            ps aux | grep "uvicorn" | grep -v grep || echo "警告：服务进程未找到"
+            curl -sf http://localhost:8080/api/health && echo "✅ 服务健康检查通过" || echo "⚠️ 服务未响应（检查 /tmp/finacesail.log）"
