@@ -21,19 +21,21 @@ class Settings(BaseSettings):
     DB_PATH: Path = DATA_DIR / "db.sqlite3"
 
     # DeepSeek AI
-    DEEPSEEK_API_KEY: str = Field(..., description="DeepSeek API密钥")
+    DEEPSEEK_API_KEY: Optional[str] = Field(
+        default=None, description="DeepSeek API密钥"
+    )
     DEEPSEEK_BASE_URL: str = Field(
         default="https://api.deepseek.com", description="DeepSeek API地址"
     )
     DEEPSEEK_MODEL: str = Field(default="deepseek-chat", description="使用的模型")
 
     # Tushare
-    TUSHARE_TOKEN: str = Field(..., description="Tushare API Token")
+    TUSHARE_TOKEN: Optional[str] = Field(default=None, description="Tushare API Token")
 
     # QQ邮箱
-    QQ_EMAIL: str = Field(..., description="发件人QQ邮箱")
-    QQ_EMAIL_AUTH_CODE: str = Field(..., description="QQ邮箱授权码")
-    RECEIVER_EMAIL: str = Field(..., description="收件人邮箱")
+    QQ_EMAIL: Optional[str] = Field(default=None, description="发件人QQ邮箱")
+    QQ_EMAIL_AUTH_CODE: Optional[str] = Field(default=None, description="QQ邮箱授权码")
+    RECEIVER_EMAIL: Optional[str] = Field(default=None, description="收件人邮箱")
 
     # SMTP配置
     SMTP_SERVER: str = Field(default="smtp.qq.com", description="SMTP服务器")
