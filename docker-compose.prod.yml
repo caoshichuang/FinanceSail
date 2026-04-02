@@ -2,17 +2,17 @@ version: '3.8'
 
 services:
   app:
-    image: ${DOCKER_USERNAME:-your_username}/redbook-auto:latest
-    container_name: redbook-auto
+    image: ${DOCKER_USERNAME:-your_username}/finacesail:latest
+    container_name: finacesail
     restart: always
     volumes:
-      - /opt/redbook-auto/data:/app/data
-      - /opt/redbook-auto/logs:/app/logs
-      - /opt/redbook-auto/.env:/app/.env:ro
+      - /opt/finacesail/data:/app/data
+      - /opt/finacesail/logs:/app/logs
+      - /opt/finacesail/.env:/app/.env:ro
     environment:
       - TZ=Asia/Shanghai
     env_file:
-      - /opt/redbook-auto/.env
+      - /opt/finacesail/.env
     logging:
       driver: "json-file"
       options:

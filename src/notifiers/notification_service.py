@@ -15,11 +15,11 @@ except ImportError:
 
     logger = logging.getLogger(__name__)
 
-from .notification_sender.wechat_sender import WechatSender
-from .notification_sender.feishu_sender import FeishuSender
-from .notification_sender.telegram_sender import TelegramSender
-from .notification_sender.email_sender import EmailSender
-from .notification_sender.pushplus_sender import PushPlusSender
+from src.notification_sender.wechat_sender import WechatSender
+from src.notification_sender.feishu_sender import FeishuSender
+from src.notification_sender.telegram_sender import TelegramSender
+from src.notification_sender.email_sender import EmailSender
+from src.notification_sender.pushplus_sender import PushPlusSender
 
 
 class NotificationService:

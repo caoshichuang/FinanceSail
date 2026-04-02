@@ -90,7 +90,7 @@ StockAnalysisPipeline
 ## 项目结构
 
 ```
-redbook-auto/
+FinanceSail/
 ├── src/
 │   ├── api/               # 后台管理API
 │   │   ├── auth.py        # 登录认证
@@ -114,8 +114,15 @@ redbook-auto/
 │   │   ├── cover.py       # 封面图
 │   │   ├── cards.py       # 字卡
 │   │   └── templates/     # HTML模板
-│   ├── notifiers/         # 通知
-│   │   └── email.py       # QQ邮件
+│   ├── notifiers/         # 通知路由层
+│   │   ├── __init__.py    # 导出 NotificationService
+│   │   └── notification_service.py  # 多渠道并发调度
+│   ├── notification_sender/  # 各渠道发送器
+│   │   ├── wechat.py      # 企业微信 Webhook
+│   │   ├── feishu.py      # 飞书 Webhook
+│   │   ├── telegram.py    # Telegram Bot
+│   │   ├── email.py       # SMTP 邮件
+│   │   └── pushplus.py    # PushPlus 推送
 │   ├── scheduler/         # 定时任务
 │   │   ├── jobs.py        # 任务定义
 │   │   └── smart_scheduler.py
@@ -313,22 +320,16 @@ cleanup_expired_users()
 4. **部署脚本自动执行**（scripts/deploy.sh）：
 
    - 备份敏感文件（`.env`、`holidays.json`、`db.sqlite3`）
-   - 从 GitHub 拉取最新代码（带重试机制）
+   - 首次部署：SSH clone `git@github.com:caoshichuang/FinanceSail.git` 到 `/home/admin/FinanceSai`
+   - 后续部署：检测到 `.git` 目录则执行 `git pull` 拉取最新代码
    - 恢复敏感文件
    - 构建前端（`npm run build`）
    - 重启服务（`nohup` 方式）
 
-**网络优化**：国内服务器访问 GitHub 可能超时，部署脚本已配置以下优化：
-
-- 使用 HTTP/1.1 协议
-- 设置低速限制 1000 字节/秒，超时时间 60 秒
-- 最多重试 5 次
-- 使用 `--depth=1` 浅克隆
-
 **CI/CD 流程**：
 
 ```
-推送代码 → GitHub Actions 触发 → SSH 连接服务器 → 执行 deploy.sh → 服务重启
+推送代码 → GitHub Actions 触发 → SSH 连接服务器 → 执行 deploy.sh（clone/pull 双模式）→ 服务重启
 ```
 
 **验证部署成功**：
@@ -338,7 +339,7 @@ cleanup_expired_users()
 curl http://你的服务器IP:8080/api/health
 
 # 检查代码版本
-ssh admin@你的服务器 "cd /home/admin/redbook-auto && git log -1 --oneline"
+ssh admin@你的服务器 "cd /home/admin/FinanceSai && git log -1 --oneline"
 ```
 
 ### 方式2：手动部署
@@ -347,10 +348,8 @@ ssh admin@你的服务器 "cd /home/admin/redbook-auto && git log -1 --oneline"
 
 ```bash
 ssh admin@your-server
-cd /home/admin/redbook-auto
-git init
-git remote add origin https://github.com/caoshichuang/FinanceSail.git
-git pull origin main
+git clone git@github.com:caoshichuang/FinanceSail.git /home/admin/FinanceSai
+cd /home/admin/FinanceSai
 ```
 
 2. **安装依赖**

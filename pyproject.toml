@@ -1,7 +1,7 @@
 [project]
-name = "redbook-auto"
+name = "finacesail"
 version = "0.1.0"
-description = "小红书股票内容自动运营系统"
+description = "AI 驱动的自动化股票分析与多渠道推送系统"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

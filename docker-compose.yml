@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: redbook-auto
+    container_name: finacesail
     restart: unless-stopped
     volumes:
       - ./data:/app/data
