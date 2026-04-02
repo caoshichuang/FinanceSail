@@ -36,7 +36,7 @@ jobs:
             --exclude='__pycache__' \
             --exclude='*.pyc' \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/admin/FinanceSai/
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/admin/FinanceSail/
           echo "代码同步完成"
 
       # 4. 构建前端（原生 ssh，无 drone-ssh 中间层）
@@ -44,7 +44,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "cd /home/admin/FinanceSai/admin && npm install --registry=https://registry.npmmirror.com && npm run build && echo '前端构建完成'"
+            "cd /home/admin/FinanceSail/admin && npm install --registry=https://registry.npmmirror.com && npm run build && echo '前端构建完成'"
 
       # 5. 重启服务（原生 ssh）
       - name: Restart service
@@ -62,7 +62,7 @@ jobs:
             echo "无旧进程在运行"
           fi
           # 用 nohup + setsid 启动，完全脱离 session
-          cd /home/admin/FinanceSai
+          cd /home/admin/FinanceSail
           nohup setsid python3 -m uvicorn src.main:app --host 0.0.0.0 --port 8080 >> /tmp/finacesail.log 2>&1 &
           NEW_PID=$!
           disown $NEW_PID

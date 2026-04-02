@@ -1,10 +1,10 @@
 #!/bin/bash
 # FinanceSail 自动部署脚本
-# 服务器路径: /home/admin/FinanceSai
+# 服务器路径: /home/admin/FinanceSail
 
 set -e
 
-PROJECT_DIR="/home/admin/FinanceSai"
+PROJECT_DIR="/home/admin/FinanceSail"
 BACKUP_DIR="/tmp/finacesail-backup"
 REPO_URL="https://github.com/caoshichuang/FinanceSail.git"
 

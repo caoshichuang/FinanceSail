@@ -320,7 +320,7 @@ cleanup_expired_users()
 4. **部署脚本自动执行**（scripts/deploy.sh）：
 
    - 备份敏感文件（`.env`、`holidays.json`、`db.sqlite3`）
-   - 首次部署：SSH clone `git@github.com:caoshichuang/FinanceSail.git` 到 `/home/admin/FinanceSai`
+   - 首次部署：SSH clone `git@github.com:caoshichuang/FinanceSail.git` 到 `/home/admin/FinanceSail`
    - 后续部署：检测到 `.git` 目录则执行 `git pull` 拉取最新代码
    - 恢复敏感文件
    - 构建前端（`npm run build`）
@@ -339,7 +339,7 @@ cleanup_expired_users()
 curl http://你的服务器IP:8080/api/health
 
 # 检查代码版本
-ssh admin@你的服务器 "cd /home/admin/FinanceSai && git log -1 --oneline"
+ssh admin@你的服务器 "cd /home/admin/FinanceSail && git log -1 --oneline"
 ```
 
 ### 方式2：手动部署
